@@ -1,8 +1,12 @@
 __pycache__/
 *.pkl
 mlruns/
+.env
+
+# Hanya ignore isi di dalam folder, bukan foldernya
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/imdb.csv
+
 data/processed/*
 !data/processed/.gitkeep
-.env
