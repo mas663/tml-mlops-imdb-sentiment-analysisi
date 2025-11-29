@@ -3,10 +3,11 @@ __pycache__/
 mlruns/
 .env
 
-# Hanya ignore isi di dalam folder, bukan foldernya
+# Ignore hanya DATA, bukan .dvc
 data/raw/*
 !data/raw/.gitkeep
-!data/raw/imdb.csv
+!data/raw/*.dvc
 
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/*.dvc
