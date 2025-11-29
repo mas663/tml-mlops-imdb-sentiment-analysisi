@@ -12,6 +12,7 @@ Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K re
 ## 🎓 Timeline Pengerjaan
 
 ### ✅ Minggu ke-13: Fondasi Sistem, Versioning, Eksperimen
+
 - [x] Setup environment dan repository
 - [x] Data versioning dengan DVC
 - [x] Baseline model training
@@ -19,6 +20,7 @@ Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K re
 - [x] Eksperimen dengan berbagai hyperparameter
 
 ### 🚀 Minggu ke-14: Pipeline, Orchestration, Pemilihan Model
+
 - [x] Membuat modular pipeline (prepare_data.py, train.py, evaluate.py)
 - [x] Integrasi MLflow ke pipeline
 - [x] DVC Pipeline orchestration
@@ -132,10 +134,10 @@ Akses dashboard di: http://127.0.0.1:5000
 ### Informasi yang Tracked
 
 - **Parameters**: max_features, max_iter, solver, model_type
-- **Metrics**: 
+- **Metrics**:
   - Training accuracy
   - Test accuracy, precision, recall, F1-score
-- **Artifacts**: 
+- **Artifacts**:
   - Trained model (model.pkl)
   - Vectorizer (vectorizer.pkl)
   - Metrics file (metrics.json)
@@ -143,6 +145,7 @@ Akses dashboard di: http://127.0.0.1:5000
 ## 📈 Hasil Eksperimen
 
 ### Baseline Model (20K features)
+
 ```
 Model: LogisticRegression
 Max Features: 20,000
@@ -154,17 +157,18 @@ Test F1-Score: 90.02%
 
 ### Eksperimen Perbandingan
 
-| Experiment | Model Type | Max Features | Test Accuracy | Test F1-Score |
-|------------|------------|--------------|---------------|---------------|
-| Baseline   | Logistic Regression | 20,000 | 89.97% | 90.02% |
-| Exp 1      | Logistic Regression | 10,000 | 89.83% | 89.89% |
-| Exp 2      | Logistic Regression | 30,000 | 90.07% | 90.12% |
+| Experiment | Model Type          | Max Features | Test Accuracy | Test F1-Score |
+| ---------- | ------------------- | ------------ | ------------- | ------------- |
+| Baseline   | Logistic Regression | 20,000       | 89.97%        | 90.02%        |
+| Exp 1      | Logistic Regression | 10,000       | 89.83%        | 89.89%        |
+| Exp 2      | Logistic Regression | 30,000       | 90.07%        | 90.12%        |
 
 **Model Terbaik**: Logistic Regression dengan 30K features (F1: 90.12%)
 
 ## 🔄 DVC Pipeline Stages
 
 ### Stage 1: Prepare
+
 ```yaml
 cmd: venv/bin/python pipeline/prepare_data.py
 deps:
@@ -176,6 +180,7 @@ outs:
 ```
 
 ### Stage 2: Train
+
 ```yaml
 cmd: venv/bin/python pipeline/train.py
 deps:
@@ -187,6 +192,7 @@ outs:
 ```
 
 ### Stage 3: Evaluate
+
 ```yaml
 cmd: venv/bin/python pipeline/evaluate.py
 deps:
@@ -202,12 +208,14 @@ outs:
 ## 📊 Metrics & Evaluation
 
 ### Confusion Matrix
+
 ```
 [[4472  528]
  [ 475 4525]]
 ```
 
 ### Classification Report
+
 ```
               precision    recall  f1-score   support
 
@@ -236,7 +244,7 @@ weighted avg       0.90      0.90      0.90     10000
 ✅ **Experiment Tracking**: Semua hyperparameter dan metrics logged ke MLflow  
 ✅ **Pipeline Automation**: DVC stages untuk reproducible pipeline  
 ✅ **Code Quality**: Modular code dengan error handling dan logging  
-✅ **Metrics Lengkap**: Accuracy, Precision, Recall, F1, Confusion Matrix  
+✅ **Metrics Lengkap**: Accuracy, Precision, Recall, F1, Confusion Matrix
 
 ## 🚀 Next Steps (Minggu ke-14 lanjutan)
 

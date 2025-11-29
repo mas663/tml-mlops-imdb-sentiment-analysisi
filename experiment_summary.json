@@ -1,0 +1,59 @@
+{
+  "best_model": {
+    "run_id": "e8d4a25565754de9a4532c4c5a0d17f5",
+    "run_name": "exp2_logistic_30k_features_20251129_171927",
+    "model_type": "LogisticRegression",
+    "max_features": "30000",
+    "test_accuracy": 0.9007,
+    "test_f1": 0.9012038603124067,
+    "train_accuracy": 0.927775
+  },
+  "all_experiments": [
+    {
+      "run_id": "e8d4a25565754de9a4532c4c5a0d17f5",
+      "run_name": "exp2_logistic_30k_features_20251129_171927",
+      "model_type": "LogisticRegression",
+      "max_features": "30000",
+      "test_accuracy": 0.9007,
+      "test_f1": 0.9012038603124067,
+      "train_accuracy": 0.927775
+    },
+    {
+      "run_id": "d5df181f3f524f35900f3a80b3727a8a",
+      "run_name": "baseline_20251129_171732",
+      "model_type": "LogisticRegression",
+      "max_features": "20000",
+      "test_accuracy": 0.8997,
+      "test_f1": 0.9002287874266388,
+      "train_accuracy": 0.925075
+    },
+    {
+      "run_id": "fc4133545aba4658bea46c6ef071d4a7",
+      "run_name": "exp1_logistic_10k_features_20251129_171927",
+      "model_type": "LogisticRegression",
+      "max_features": "10000",
+      "test_accuracy": 0.8983,
+      "test_f1": 0.8988562904027847,
+      "train_accuracy": 0.920175
+    },
+    {
+      "run_id": "d655058344084f26b70d74419c108eeb",
+      "run_name": "exp1_logistic_10k_features_20251129_171922",
+      "model_type": "LogisticRegression",
+      "max_features": "10000",
+      "test_accuracy": 0.8983,
+      "test_f1": 0.8988562904027847,
+      "train_accuracy": 0.920175
+    },
+    {
+      "run_id": "95024cc39f0543a28e2bf81dc9e19bf7",
+      "run_name": "exp3_random_forest_20251129_171927",
+      "model_type": "RandomForest",
+      "max_features": "15000",
+      "test_accuracy": 0,
+      "test_f1": 0,
+      "train_accuracy": 0
+    }
+  ],
+  "total_runs": 5
+}
