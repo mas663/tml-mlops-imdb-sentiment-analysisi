@@ -96,7 +96,23 @@ git lfs pull
 
 ## 🚀 Menjalankan Pipeline
 
-### Opsi 1: Jalankan Full Pipeline dengan Prefect
+### Opsi 1: Docker (Recommended for Reproducibility) 🐳
+
+```bash
+# Build dan jalankan dengan Docker Compose
+docker-compose up --build
+
+# Hanya jalankan pipeline (tanpa MLflow server)
+docker-compose up pipeline
+
+# Jalankan dengan MLflow UI dan Prefect server
+docker-compose up mlflow prefect pipeline
+
+# Stop semua services
+docker-compose down
+```
+
+### Opsi 2: Jalankan Full Pipeline dengan Prefect (Local)
 
 ```bash
 # Cara termudah: gunakan script wrapper
@@ -111,7 +127,7 @@ prefect server start
 python pipeline/prefect_flow.py
 ```
 
-### Opsi 2: Jalankan Manual Step-by-Step
+### Opsi 3: Jalankan Manual Step-by-Step
 
 ```bash
 # Step 1: Prepare data (cleaning & splitting)
@@ -124,14 +140,17 @@ python pipeline/train.py
 python pipeline/evaluate.py
 ```
 
-### Opsi 3: Jalankan Eksperimen Batch
+### Opsi 4: Jalankan Eksperimen Batch
 
 ```bash
 # Jalankan multiple eksperimen dengan hyperparameter berbeda
 python pipeline/experiment.py
+
+# Compare dan pilih best model otomatis
+python pipeline/compare_experiments.py
 ```
 
-## 📊 MLflow Tracking
+## 📊 MLflow Tracking & Experiment Comparison
 
 ### Start MLflow UI
 
@@ -140,6 +159,19 @@ mlflow ui --port 5000
 ```
 
 Akses dashboard di: http://127.0.0.1:5000
+
+### Automated Experiment Comparison
+
+```bash
+# Compare semua experiments dan pilih best model
+python pipeline/compare_experiments.py
+```
+
+**Output:**
+
+- `experiment_comparison.csv` - Tabel perbandingan semua runs
+- `best_model_info.json` - Info model terbaik untuk deployment
+- Console output dengan visualisasi hasil
 
 ### Informasi yang Tracked
 
@@ -151,6 +183,16 @@ Akses dashboard di: http://127.0.0.1:5000
   - Trained model (model.pkl)
   - Vectorizer (vectorizer.pkl)
   - Metrics file (metrics.json)
+
+### Cara Membandingkan Model di MLflow UI
+
+1. Buka http://localhost:5000
+2. Pilih multiple runs dengan checkbox
+3. Klik "Compare" button
+4. View side-by-side comparison:
+   - Metrics charts
+   - Parameter differences
+   - Artifact comparisons
 
 ## 📈 Hasil Eksperimen
 
@@ -236,34 +278,54 @@ weighted avg       0.90      0.90      0.90     10000
 ## 🛠️ Tech Stack
 
 - **Data Versioning**: Git LFS (Large File Storage)
-- **Workflow Orchestration**: Prefect
-- **Experiment Tracking**: MLflow
-- **ML Framework**: scikit-learn
+- **Workflow Orchestration**: Prefect 3.4.25
+- **Experiment Tracking**: MLflow 3.1.4
+- **ML Framework**: scikit-learn 1.6.1
 - **Feature Engineering**: TF-IDF Vectorization
 - **Model**: Logistic Regression
+- **Containerization**: Docker + Docker Compose
 
 ## 📝 Best Practices Implemented
 
 ✅ **Train-Test Split**: 80-20 stratified split untuk mencegah overfitting  
 ✅ **Reproducibility**: Random seed tetap (42) di semua eksperimen  
+✅ **Environment Isolation**: Docker containers untuk reproducible environment  
+✅ **Automated Experiment Comparison**: Script untuk pilih best model otomatis  
 ✅ **Data Versioning**: Dataset tracked dengan Git LFS untuk file besar  
 ✅ **Experiment Tracking**: Semua hyperparameter dan metrics logged ke MLflow  
 ✅ **Workflow Orchestration**: Prefect untuk automated pipeline dengan retry logic  
 ✅ **Code Quality**: Modular code dengan error handling dan logging  
 ✅ **Metrics Lengkap**: Accuracy, Precision, Recall, F1, Confusion Matrix
 
-## 🚀 Next Steps (Minggu ke-14 lanjutan)
+## 🚀 Next Steps (Week 3-4)
 
-- [ ] **Model Serving**: Buat FastAPI endpoint di folder `api/`
+### Week 3: Model Deployment
+
+- [ ] **Model Serving**: Buat FastAPI REST API endpoint di folder `api/`
+- [ ] **API Testing**: Test dengan curl/Postman
+- [ ] **API Documentation**: Swagger/OpenAPI docs
+
+### Week 4: Monitoring & Final Polish
+
 - [ ] **Dashboard**: Streamlit dashboard untuk inference demo
-- [ ] **Containerization**: Dockerfile untuk deployment
 - [ ] **Monitoring**: Evidently untuk data drift detection
-- [ ] **CI/CD**: GitHub Actions untuk automated testing
-- [ ] **Documentation**: Diagram arsitektur MLOps
+- [ ] **CI/CD**: GitHub Actions untuk automated testing (optional)
+- [ ] **Presentation**: Slide presentasi final
 
 ## 🎯 Perintah Penting
 
 ```bash
+# ==== DOCKER (RECOMMENDED) ====
+# Build dan jalankan semua services
+docker-compose up --build
+
+# Jalankan hanya pipeline
+docker-compose up pipeline
+
+# Stop semua containers
+docker-compose down
+
+# ==== LOCAL EXECUTION ====
 # Aktivasi environment
 source venv/bin/activate
 
@@ -273,15 +335,25 @@ source venv/bin/activate
 # Atau jalankan manual dengan Prefect
 PREFECT_API_URL="" python pipeline/prefect_flow.py
 
+# Compare experiments dan pilih best model
+python pipeline/compare_experiments.py
+
+# ==== MONITORING & VISUALIZATION ====
 # Lihat MLflow dashboard
 mlflow ui --port 5000
 
 # Start Prefect server (opsional, untuk monitoring)
 prefect server start
 
-# Git LFS commands
-git lfs pull              # Pull large files
-git lfs ls-files          # List tracked files
+# ==== GIT LFS ====
+# Pull large files
+git lfs pull
+
+# List tracked files
+git lfs ls-files
+
+# Check LFS status
+git lfs status
 
 # Lihat metrics
 cat metrics.json

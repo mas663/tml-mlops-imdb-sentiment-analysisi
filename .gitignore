@@ -38,14 +38,12 @@ mlruns/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Data files (tracked by DVC)
-data/raw/*
-!data/raw/.gitkeep
-!data/raw/*.dvc
-
-data/processed/*
-!data/processed/.gitkeep
-!data/processed/*.dvc
+# Data files (tracked by Git LFS)
+# CSV files are now tracked by Git LFS, not ignored
+!data/raw/*.csv
+!data/processed/*.csv
+data/raw/.gitkeep
+data/processed/.gitkeep
 
 # Metrics (generated files)
 /metrics.txt

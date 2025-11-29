@@ -1,0 +1,17 @@
+{
+  "best_run_id": "e8d4a255",
+  "best_run_name": "exp2_logistic_30k_features_20251129_171927",
+  "model_type": "LogisticRegression",
+  "hyperparameters": {
+    "max_features": 30000,
+    "max_iter": 500,
+    "solver": "lbfgs"
+  },
+  "metrics": {
+    "train_accuracy": 0.927775,
+    "test_accuracy": 0.9007,
+    "test_precision": 0.8966541278954663,
+    "test_recall": 0.9058,
+    "test_f1_score": 0.9012038603124067
+  }
+}

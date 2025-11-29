@@ -1,6 +1,7 @@
 # Migration Summary: DVC → Prefect + Git LFS
 
 ## 📅 Migration Date
+
 November 29, 2024
 
 ## 🎯 Migration Objectives
@@ -15,6 +16,7 @@ November 29, 2024
 ## ✅ Migration Steps Completed
 
 ### 1. **Git LFS Installation & Configuration**
+
 ```bash
 brew install git-lfs
 git lfs install
@@ -27,11 +29,14 @@ git lfs track "data/processed/*.csv"
 ---
 
 ### 2. **DVC Removal**
+
 Uninstalled packages:
+
 - dvc 3.64.0
 - dvc-data, dvc-http, dvc-objects, dvc-render, dvc-studio-client, dvc-task
 
 Removed files:
+
 - `.dvc/` directory
 - `dvc.yaml` (pipeline definition)
 - `dvc.lock` (execution state)
@@ -41,6 +46,7 @@ Removed files:
 ---
 
 ### 3. **Prefect Installation**
+
 ```bash
 pip install prefect
 ```
@@ -50,9 +56,11 @@ pip install prefect
 ---
 
 ### 4. **Prefect Flow Creation**
+
 Created: `pipeline/prefect_flow.py`
 
 **Architecture:**
+
 ```python
 @flow(name="imdb-sentiment-pipeline")
 def sentiment_analysis_pipeline():
@@ -62,6 +70,7 @@ def sentiment_analysis_pipeline():
 ```
 
 **Features:**
+
 - ✅ Retry logic (prepare: 2 retries, train/evaluate: 1 retry)
 - ✅ Concurrent task runner
 - ✅ Full logging with `log_prints=True`
@@ -70,9 +79,11 @@ def sentiment_analysis_pipeline():
 ---
 
 ### 5. **Convenience Script**
+
 Created: `run_pipeline.sh`
 
 **Purpose:** Simple wrapper to run Prefect pipeline in local mode
+
 ```bash
 ./run_pipeline.sh  # One command to rule them all!
 ```
@@ -82,6 +93,7 @@ Created: `run_pipeline.sh`
 ### 6. **Documentation Updates**
 
 #### **README.md:**
+
 - ✅ Updated "Tools" section: DVC → Prefect + Git LFS
 - ✅ Updated setup instructions for Git LFS
 - ✅ Replaced DVC commands with Prefect commands
@@ -90,6 +102,7 @@ Created: `run_pipeline.sh`
 - ✅ Updated "Perintah Penting" section
 
 #### **ARCHITECTURE.md:**
+
 - (Unchanged - still accurate, describes ML pipeline architecture)
 
 ---
@@ -97,6 +110,7 @@ Created: `run_pipeline.sh`
 ## 📊 Migration Results
 
 ### Git Commits
+
 ```
 4f456de2 - Add run_pipeline.sh wrapper script for easier execution
 82454766 - Fix Prefect flow to work in local mode + update README
@@ -105,9 +119,11 @@ f1b4f304 - Migrate from DVC to Prefect for workflow orchestration
 ```
 
 ### Pipeline Execution Test
+
 **Status:** ✅ SUCCESS
 
 **Output:**
+
 ```
 🚀 STARTING IMDB SENTIMENT ANALYSIS PIPELINE
 ✅ Data preparation complete
@@ -117,6 +133,7 @@ f1b4f304 - Migrate from DVC to Prefect for workflow orchestration
 ```
 
 **Metrics (Latest Run):**
+
 - Accuracy: 89.97%
 - Precision: 89.55%
 - Recall: 90.50%
@@ -127,16 +144,20 @@ f1b4f304 - Migrate from DVC to Prefect for workflow orchestration
 ## 🔧 Technical Configuration
 
 ### Prefect Local Mode
+
 **Environment Variable:** `PREFECT_API_URL=""`
 
 **Why:** Prefect 3.x by default tries to connect to API server. Setting empty URL forces local ephemeral mode.
 
 ### Git LFS Tracking
+
 **Files Tracked:**
+
 - `data/raw/*.csv` (50K IMDB dataset)
 - `data/processed/*.csv` (train/test splits)
 
 **Benefits:**
+
 - ✅ Large files stored in Git LFS (not in repo)
 - ✅ Fast cloning (pointer files only)
 - ✅ Free for public repositories
@@ -177,6 +198,7 @@ mlops-sentiment/
 ## 🎓 Learning Outcomes
 
 ### Skills Demonstrated:
+
 1. ✅ **Migration Planning:** DVC → Prefect + Git LFS
 2. ✅ **Tool Selection:** Chose familiar tools (Prefect from class)
 3. ✅ **Workflow Orchestration:** Prefect @flow and @task decorators
@@ -186,6 +208,7 @@ mlops-sentiment/
 7. ✅ **Git Mastery:** Clean commit history, successful push
 
 ### Why Prefect > DVC (for this project):
+
 - ✅ Student learned Prefect in class (familiar)
 - ✅ Python-native workflow orchestration
 - ✅ Better retry/error handling
@@ -198,6 +221,7 @@ mlops-sentiment/
 ## 🚀 How to Use (Quick Start)
 
 ### Setup
+
 ```bash
 git clone <repo-url>
 cd mlops-sentiment
@@ -208,11 +232,13 @@ git lfs install && git lfs pull
 ```
 
 ### Run Pipeline
+
 ```bash
 ./run_pipeline.sh
 ```
 
 ### View Results
+
 ```bash
 cat metrics.json
 mlflow ui --port 5000
@@ -223,6 +249,7 @@ mlflow ui --port 5000
 ## 📈 Next Steps (Future Enhancements)
 
 ### Week 14+ Tasks:
+
 - [ ] Deploy FastAPI endpoint (separate repo)
 - [ ] Create Streamlit dashboard (separate repo)
 - [ ] Add Prefect scheduling (weekly retraining)
@@ -235,6 +262,7 @@ mlflow ui --port 5000
 ## 🎉 Migration Status: **COMPLETE** ✅
 
 **All objectives achieved:**
+
 - ✅ DVC completely removed
 - ✅ Prefect installed and working
 - ✅ Git LFS configured for data
