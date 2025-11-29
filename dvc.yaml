@@ -1,0 +1,29 @@
+stages:
+  prepare:
+    cmd: venv/bin/python pipeline/prepare_data.py
+    deps:
+      - data/raw/imdb.csv
+      - pipeline/prepare_data.py
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: venv/bin/python pipeline/train.py
+    deps:
+      - data/processed/train.csv
+      - pipeline/train.py
+    outs:
+      - models/model.pkl
+      - models/vectorizer.pkl
+
+  evaluate:
+    cmd: venv/bin/python pipeline/evaluate.py
+    deps:
+      - data/processed/test.csv
+      - models/model.pkl
+      - models/vectorizer.pkl
+      - pipeline/evaluate.py
+    outs:
+      - metrics.txt
+      - metrics.json

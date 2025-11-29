@@ -7,3 +7,5 @@ prefect
 fastapi
 uvicorn
 streamlit
+evidently
+joblib

@@ -11,3 +11,5 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/*.dvc
+/metrics.txt
+/metrics.json
