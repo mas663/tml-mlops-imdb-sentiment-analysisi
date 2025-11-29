@@ -7,14 +7,14 @@ Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K re
 - **Dataset**: IMDB 50K movie reviews (25K positive, 25K negative)
 - **Model**: Logistic Regression dengan TF-IDF vectorization
 - **Pipeline**: Data preparation → Training → Evaluation
-- **Tools**: DVC, MLflow, scikit-learn
+- **Tools**: Prefect, MLflow, Git LFS, scikit-learn
 
 ## 🎓 Timeline Pengerjaan
 
 ### ✅ Minggu ke-13: Fondasi Sistem, Versioning, Eksperimen
 
 - [x] Setup environment dan repository
-- [x] Data versioning dengan DVC
+- [x] Data versioning dengan Git LFS
 - [x] Baseline model training
 - [x] Setup MLflow tracking
 - [x] Eksperimen dengan berbagai hyperparameter
@@ -23,10 +23,10 @@ Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K re
 
 - [x] Membuat modular pipeline (prepare_data.py, train.py, evaluate.py)
 - [x] Integrasi MLflow ke pipeline
-- [x] DVC Pipeline orchestration
-- [ ] Analisis eksperimen dan pilih model terbaik
-- [ ] Export model untuk deployment
-- [ ] Dokumentasi arsitektur sistem
+- [x] Prefect workflow orchestration
+- [x] Analisis eksperimen dan pilih model terbaik
+- [x] Export model untuk deployment
+- [x] Dokumentasi arsitektur sistem
 
 ## 📁 Struktur Project
 
@@ -34,22 +34,21 @@ Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K re
 mlops-sentiment/
 ├── data/
 │   ├── raw/
-│   │   ├── imdb.csv          # Dataset asli (tracked by DVC)
-│   │   └── imdb.csv.dvc      # DVC metadata
+│   │   └── imdb.csv          # Dataset asli (tracked by Git LFS)
 │   └── processed/
-│       ├── train.csv         # 80% data untuk training
-│       └── test.csv          # 20% data untuk testing
+│       ├── train.csv         # 80% data untuk training (tracked by Git LFS)
+│       └── test.csv          # 20% data untuk testing (tracked by Git LFS)
 ├── pipeline/
 │   ├── prepare_data.py       # Data cleaning & splitting
 │   ├── train.py              # Model training + MLflow logging
 │   ├── evaluate.py           # Model evaluation + metrics
-│   └── experiment.py         # Automated experiments
+│   ├── experiment.py         # Automated experiments
+│   └── prefect_flow.py       # Prefect workflow orchestration
 ├── models/
 │   ├── model.pkl             # Trained model
 │   └── vectorizer.pkl        # TF-IDF vectorizer
 ├── mlruns/                   # MLflow tracking data
-├── dvc.yaml                  # DVC pipeline definition
-├── dvc.lock                  # DVC pipeline lock file
+├── .gitattributes            # Git LFS configuration
 ├── requirements.txt          # Python dependencies
 ├── metrics.json              # Evaluation metrics
 └── README.md                 # Documentation
@@ -80,45 +79,53 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Pull Data from DVC Remote (jika sudah setup)
+### 4. Setup Git LFS for Data Files
 
 ```bash
-dvc pull
+# Install Git LFS (jika belum)
+brew install git-lfs  # macOS
+# atau
+sudo apt-get install git-lfs  # Ubuntu
+
+# Initialize Git LFS
+git lfs install
+
+# Pull data files
+git lfs pull
 ```
 
 ## 🚀 Menjalankan Pipeline
 
-### Opsi 1: Jalankan Full Pipeline dengan DVC
+### Opsi 1: Jalankan Full Pipeline dengan Prefect
 
 ```bash
-# Jalankan semua stages (prepare → train → evaluate)
-dvc repro
+# Jalankan pipeline dengan Prefect orchestration
+python pipeline/prefect_flow.py
 
-# Lihat status pipeline
-dvc status
-
-# Lihat DAG pipeline
-dvc dag
+# Atau start Prefect server untuk monitoring (opsional)
+prefect server start
+# Lalu di terminal lain:
+python pipeline/prefect_flow.py
 ```
 
 ### Opsi 2: Jalankan Manual Step-by-Step
 
 ```bash
 # Step 1: Prepare data (cleaning & splitting)
-venv/bin/python pipeline/prepare_data.py
+python pipeline/prepare_data.py
 
 # Step 2: Train model
-venv/bin/python pipeline/train.py
+python pipeline/train.py
 
 # Step 3: Evaluate model
-venv/bin/python pipeline/evaluate.py
+python pipeline/evaluate.py
 ```
 
 ### Opsi 3: Jalankan Eksperimen Batch
 
 ```bash
 # Jalankan multiple eksperimen dengan hyperparameter berbeda
-venv/bin/python pipeline/experiment.py
+python pipeline/experiment.py
 ```
 
 ## 📊 MLflow Tracking
@@ -126,7 +133,7 @@ venv/bin/python pipeline/experiment.py
 ### Start MLflow UI
 
 ```bash
-venv/bin/mlflow ui --port 5000
+mlflow ui --port 5000
 ```
 
 Akses dashboard di: http://127.0.0.1:5000
@@ -165,45 +172,41 @@ Test F1-Score: 90.02%
 
 **Model Terbaik**: Logistic Regression dengan 30K features (F1: 90.12%)
 
-## 🔄 DVC Pipeline Stages
+## 🔄 Prefect Pipeline Architecture
 
-### Stage 1: Prepare
+### Workflow Structure
 
-```yaml
-cmd: venv/bin/python pipeline/prepare_data.py
-deps:
-  - data/raw/imdb.csv
-  - pipeline/prepare_data.py
-outs:
-  - data/processed/train.csv
-  - data/processed/test.csv
+```python
+@flow(name="imdb-sentiment-pipeline")
+def sentiment_analysis_pipeline():
+    # Task 1: Data preparation
+    prepare_data_task()
+
+    # Task 2: Model training (depends on prepare)
+    train_model_task()
+
+    # Task 3: Model evaluation (depends on train)
+    evaluate_model_task()
 ```
 
-### Stage 2: Train
+### Task Features
 
-```yaml
-cmd: venv/bin/python pipeline/train.py
-deps:
-  - data/processed/train.csv
-  - pipeline/train.py
-outs:
-  - models/model.pkl
-  - models/vectorizer.pkl
+- **Retries**: Automatic retry on failure (prepare: 2x, train/evaluate: 1x)
+- **Retry Delay**: Configurable delay between retries
+- **Concurrent Runner**: Tasks can run in parallel when possible
+- **Logging**: Full execution logs and error tracking
+
+### Running with Prefect UI (Optional)
+
+```bash
+# Terminal 1: Start Prefect server
+prefect server start
+
+# Terminal 2: Run pipeline
+python pipeline/prefect_flow.py
 ```
 
-### Stage 3: Evaluate
-
-```yaml
-cmd: venv/bin/python pipeline/evaluate.py
-deps:
-  - data/processed/test.csv
-  - models/model.pkl
-  - models/vectorizer.pkl
-  - pipeline/evaluate.py
-outs:
-  - metrics.txt
-  - metrics.json
-```
+Akses Prefect UI di: http://127.0.0.1:4200
 
 ## 📊 Metrics & Evaluation
 
@@ -229,10 +232,10 @@ weighted avg       0.90      0.90      0.90     10000
 
 ## 🛠️ Tech Stack
 
-- **Data Versioning**: DVC (Data Version Control)
+- **Data Versioning**: Git LFS (Large File Storage)
+- **Workflow Orchestration**: Prefect
 - **Experiment Tracking**: MLflow
 - **ML Framework**: scikit-learn
-- **Pipeline Orchestration**: DVC stages
 - **Feature Engineering**: TF-IDF Vectorization
 - **Model**: Logistic Regression
 
@@ -240,9 +243,9 @@ weighted avg       0.90      0.90      0.90     10000
 
 ✅ **Train-Test Split**: 80-20 stratified split untuk mencegah overfitting  
 ✅ **Reproducibility**: Random seed tetap (42) di semua eksperimen  
-✅ **Data Versioning**: Dataset tidak masuk Git, hanya .dvc metadata  
+✅ **Data Versioning**: Dataset tracked dengan Git LFS untuk file besar  
 ✅ **Experiment Tracking**: Semua hyperparameter dan metrics logged ke MLflow  
-✅ **Pipeline Automation**: DVC stages untuk reproducible pipeline  
+✅ **Workflow Orchestration**: Prefect untuk automated pipeline dengan retry logic  
 ✅ **Code Quality**: Modular code dengan error handling dan logging  
 ✅ **Metrics Lengkap**: Accuracy, Precision, Recall, F1, Confusion Matrix
 
@@ -262,17 +265,17 @@ weighted avg       0.90      0.90      0.90     10000
 source venv/bin/activate
 
 # Jalankan pipeline lengkap
-dvc repro
+python pipeline/prefect_flow.py
 
 # Lihat MLflow dashboard
-venv/bin/mlflow ui --port 5000
+mlflow ui --port 5000
 
-# Push data ke remote (setelah setup remote)
-dvc push
+# Start Prefect server (opsional, untuk monitoring)
+prefect server start
 
-# Git commit pipeline changes
-git add dvc.yaml dvc.lock .gitignore
-git commit -m "Update pipeline"
+# Git LFS commands
+git lfs pull              # Pull large files
+git lfs ls-files          # List tracked files
 
 # Lihat metrics
 cat metrics.json
@@ -280,7 +283,8 @@ cat metrics.json
 
 ## 📚 Resources
 
-- [DVC Documentation](https://dvc.org/doc)
+- [Prefect Documentation](https://docs.prefect.io/)
+- [Git LFS Documentation](https://git-lfs.github.com/)
 - [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
 - [scikit-learn Documentation](https://scikit-learn.org/)
 
