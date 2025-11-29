@@ -99,10 +99,10 @@ git lfs pull
 ### Opsi 1: Jalankan Full Pipeline dengan Prefect
 
 ```bash
-# Jalankan pipeline dengan Prefect orchestration
-python pipeline/prefect_flow.py
+# Jalankan pipeline dengan Prefect (local mode)
+PREFECT_API_URL="" python pipeline/prefect_flow.py
 
-# Atau start Prefect server untuk monitoring (opsional)
+# Atau start Prefect server untuk monitoring UI (opsional)
 prefect server start
 # Lalu di terminal lain:
 python pipeline/prefect_flow.py

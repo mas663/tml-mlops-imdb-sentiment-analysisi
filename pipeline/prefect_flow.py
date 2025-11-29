@@ -3,15 +3,10 @@ Prefect Flow for IMDB Sentiment Analysis Pipeline
 Orchestrates: Data Preparation → Training → Evaluation
 """
 
-import os
 import sys
 from pathlib import Path
 from prefect import flow, task
 from prefect.task_runners import ConcurrentTaskRunner
-import subprocess
-
-# Set Prefect to use ephemeral mode (no server required)
-os.environ["PREFECT_API_URL"] = "http://ephemeral-prefect/api"
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
