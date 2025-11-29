@@ -99,7 +99,10 @@ git lfs pull
 ### Opsi 1: Jalankan Full Pipeline dengan Prefect
 
 ```bash
-# Jalankan pipeline dengan Prefect (local mode)
+# Cara termudah: gunakan script wrapper
+./run_pipeline.sh
+
+# Atau manual dengan environment variable
 PREFECT_API_URL="" python pipeline/prefect_flow.py
 
 # Atau start Prefect server untuk monitoring UI (opsional)
@@ -264,8 +267,11 @@ weighted avg       0.90      0.90      0.90     10000
 # Aktivasi environment
 source venv/bin/activate
 
-# Jalankan pipeline lengkap
-python pipeline/prefect_flow.py
+# Jalankan pipeline lengkap (recommended)
+./run_pipeline.sh
+
+# Atau jalankan manual dengan Prefect
+PREFECT_API_URL="" python pipeline/prefect_flow.py
 
 # Lihat MLflow dashboard
 mlflow ui --port 5000
