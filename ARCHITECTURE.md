@@ -234,32 +234,37 @@
 ## 📝 Key Design Decisions
 
 ### 1. **Train-Test Split Strategy**
+
 - **Decision**: 80-20 stratified split
 - **Rationale**: Balance between training data volume and test reliability
 - **Implementation**: `sklearn.model_selection.train_test_split(stratify=y)`
 
 ### 2. **Feature Engineering**
+
 - **Decision**: TF-IDF vectorization with 30K max features
 - **Rationale**: Captures semantic meaning better than simple BOW
 - **Trade-off**: Higher memory usage vs better performance
 
 ### 3. **Model Selection**
+
 - **Decision**: Logistic Regression
-- **Rationale**: 
+- **Rationale**:
   - Fast training and inference
   - Interpretable coefficients
   - Good baseline performance (90% accuracy)
   - Scalable to large datasets
 
 ### 4. **Experiment Tracking**
+
 - **Decision**: MLflow for experiment tracking
-- **Rationale**: 
+- **Rationale**:
   - Industry standard
   - Easy comparison of runs
   - Model registry capability
   - Integration with serving
 
 ### 5. **Pipeline Orchestration**
+
 - **Decision**: DVC stages for pipeline
 - **Rationale**:
   - Reproducible workflows
@@ -270,18 +275,21 @@
 ## 🎓 Learning Outcomes
 
 ✅ **MLOps Best Practices**
+
 - Data versioning with DVC
 - Experiment tracking with MLflow
 - Reproducible pipelines
 - Model evaluation metrics
 
 ✅ **Software Engineering**
+
 - Modular code structure
 - Error handling
 - Logging and monitoring
 - Git workflow
 
 ✅ **Machine Learning**
+
 - Text preprocessing
 - TF-IDF vectorization
 - Binary classification

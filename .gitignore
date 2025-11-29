@@ -1,9 +1,44 @@
+# Python
 __pycache__/
-*.pkl
-mlruns/
-.env
+*.py[cod]
+*$py.class
+*.so
+.Python
 
-# Ignore hanya DATA, bukan .dvc
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Model files
+*.pkl
+*.h5
+*.joblib
+
+# MLflow
+mlruns/
+
+# Environment variables
+.env
+.env.local
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data files (tracked by DVC)
 data/raw/*
 !data/raw/.gitkeep
 !data/raw/*.dvc
@@ -11,5 +46,13 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/*.dvc
+
+# Metrics (generated files)
 /metrics.txt
 /metrics.json
+/experiment_summary.json
+
+# DVC
+.dvc/cache
+.dvc/tmp
+.dvc/plots
