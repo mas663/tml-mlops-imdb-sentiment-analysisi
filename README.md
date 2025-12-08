@@ -1,383 +1,166 @@
-# 🎯 MLOps Sentiment Analysis - IMDB 50K Dataset
+# MLOps Sentiment Analysis
 
-Proyek MLOps end-to-end untuk Sentiment Analysis menggunakan dataset IMDB 50K reviews. Implementasi complete pipeline dengan data versioning, experiment tracking, dan reproducibility.
+Sistem sentiment analysis otomatis untuk IMDB movie reviews dengan complete MLOps pipeline.
 
-## 📋 Overview
-
-- **Dataset**: IMDB 50K movie reviews (25K positive, 25K negative)
-- **Model**: Logistic Regression dengan TF-IDF vectorization
-- **Pipeline**: Data preparation → Training → Evaluation
-- **Tools**: Prefect, MLflow, Git LFS, scikit-learn
-
-## 🎓 Timeline Pengerjaan
-
-### ✅ Minggu ke-13: Fondasi Sistem, Versioning, Eksperimen
-
-- [x] Setup environment dan repository
-- [x] Data versioning dengan Git LFS
-- [x] Baseline model training
-- [x] Setup MLflow tracking
-- [x] Eksperimen dengan berbagai hyperparameter
-
-### 🚀 Minggu ke-14: Pipeline, Orchestration, Pemilihan Model
-
-- [x] Membuat modular pipeline (prepare_data.py, train.py, evaluate.py)
-- [x] Integrasi MLflow ke pipeline
-- [x] Prefect workflow orchestration
-- [x] Analisis eksperimen dan pilih model terbaik
-- [x] Export model untuk deployment
-- [x] Dokumentasi arsitektur sistem
-
-## 📁 Struktur Project
-
-```
-mlops-sentiment/
-├── data/
-│   ├── raw/
-│   │   └── imdb.csv          # Dataset asli (tracked by Git LFS)
-│   └── processed/
-│       ├── train.csv         # 80% data untuk training (tracked by Git LFS)
-│       └── test.csv          # 20% data untuk testing (tracked by Git LFS)
-├── pipeline/
-│   ├── prepare_data.py       # Data cleaning & splitting
-│   ├── train.py              # Model training + MLflow logging
-│   ├── evaluate.py           # Model evaluation + metrics
-│   ├── experiment.py         # Automated experiments
-│   └── prefect_flow.py       # Prefect workflow orchestration
-├── models/
-│   ├── model.pkl             # Trained model
-│   └── vectorizer.pkl        # TF-IDF vectorizer
-├── mlruns/                   # MLflow tracking data
-├── .gitattributes            # Git LFS configuration
-├── requirements.txt          # Python dependencies
-├── metrics.json              # Evaluation metrics
-└── README.md                 # Documentation
-
-```
-
-## 🔧 Setup & Installation
-
-### 1. Clone Repository
+## Quick Start
 
 ```bash
-git clone <your-repo-url>
+# Clone & setup
+git clone <repo-url>
 cd mlops-sentiment
-```
-
-### 2. Create Virtual Environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-# atau
-venv\Scripts\activate     # Windows
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Setup Git LFS for Data Files
-
-```bash
-# Install Git LFS (jika belum)
-brew install git-lfs  # macOS
-# atau
-sudo apt-get install git-lfs  # Ubuntu
-
-# Initialize Git LFS
-git lfs install
-
-# Pull data files
 git lfs pull
+
+# Run dengan Docker (recommended)
+docker-compose up -d
+
+# Access services:
+# - MLflow: http://localhost:5000
+# - API: http://localhost:8000
+# - Dashboard: http://localhost:8501
 ```
 
-## 🚀 Menjalankan Pipeline
+## Dataset & Model
 
-### Opsi 1: Docker (Recommended for Reproducibility) 🐳
+- **Dataset**: IMDB 50K reviews (Git LFS)
+- **Model**: Logistic Regression + TF-IDF
+- **Performance**: Accuracy 89.97%, F1 90.02%
 
-```bash
-# Build dan jalankan dengan Docker Compose
-docker-compose up --build
+## Project Structure
 
-# Hanya jalankan pipeline (tanpa MLflow server)
-docker-compose up pipeline
-
-# Jalankan dengan MLflow UI dan Prefect server
-docker-compose up mlflow prefect pipeline
-
-# Stop semua services
-docker-compose down
+```
+├── data/                    # Dataset (Git LFS tracked)
+├── pipeline/                # ML pipeline scripts
+│   ├── prepare_data.py      # Data preparation
+│   ├── train.py             # Model training
+│   ├── evaluate.py          # Evaluation
+│   └── prefect_flow.py      # Orchestration
+├── api/                     # FastAPI endpoints
+├── dashboard/               # Streamlit monitoring
+├── models/                  # Saved models
+├── mlruns/                  # MLflow tracking
+└── docker-compose.yml       # Container orchestration
 ```
 
-### Opsi 2: Jalankan Full Pipeline dengan Prefect (Local)
+## Features
 
+### A. Data Versioning (Git LFS)
+- Dataset tracked dengan Git LFS
+- Remote storage: GitHub LFS
+- Command: `git lfs pull`
+
+### B. Experiment Tracking (MLflow)
+- Auto-logging metrics & parameters
+- Web UI untuk comparison
+- Access: http://localhost:5000
+
+### C. Pipeline Orchestration (Prefect)
+- 3 tasks: prepare → train → evaluate
+- Retry logic & error handling
+- Run: `python pipeline/prefect_flow.py`
+
+### D. Model Deployment (FastAPI)
+- REST API endpoints
+- JSON input/output
+- Docs: http://localhost:8000/docs
+
+**Test API:**
 ```bash
-# Cara termudah: gunakan script wrapper
-./run_pipeline.sh
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This movie is amazing!"}'
+```
 
-# Atau manual dengan environment variable
-PREFECT_API_URL="" python pipeline/prefect_flow.py
+### E. Monitoring Dashboard (Streamlit)
+- Live prediction interface
+- Performance charts
+- Data drift detection
+- Access: http://localhost:8501
 
-# Atau start Prefect server untuk monitoring UI (opsional)
-prefect server start
-# Lalu di terminal lain:
+## Running Pipeline
+
+### Option 1: Docker (Recommended)
+```bash
+docker-compose up -d
+```
+
+### Option 2: Local
+```bash
+# Setup
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run pipeline
 python pipeline/prefect_flow.py
-```
 
-### Opsi 3: Jalankan Manual Step-by-Step
-
-```bash
-# Step 1: Prepare data (cleaning & splitting)
-python pipeline/prepare_data.py
-
-# Step 2: Train model
-python pipeline/train.py
-
-# Step 3: Evaluate model
-python pipeline/evaluate.py
-```
-
-### Opsi 4: Jalankan Eksperimen Batch
-
-```bash
-# Jalankan multiple eksperimen dengan hyperparameter berbeda
-python pipeline/experiment.py
-
-# Compare dan pilih best model otomatis
-python pipeline/compare_experiments.py
-```
-
-## 📊 MLflow Tracking & Experiment Comparison
-
-### Start MLflow UI
-
-```bash
+# Start MLflow UI
 mlflow ui --port 5000
 ```
 
-Akses dashboard di: http://127.0.0.1:5000
+## Tech Stack
 
-### Automated Experiment Comparison
+- **Orchestration**: Prefect
+- **Tracking**: MLflow
+- **Versioning**: Git LFS
+- **API**: FastAPI
+- **Monitoring**: Streamlit + Evidently
+- **ML**: scikit-learn
+- **Containers**: Docker
 
-```bash
-# Compare semua experiments dan pilih best model
-python pipeline/compare_experiments.py
+## Key Results
+
+**Baseline Model:**
 ```
-
-**Output:**
-
-- `experiment_comparison.csv` - Tabel perbandingan semua runs
-- `best_model_info.json` - Info model terbaik untuk deployment
-- Console output dengan visualisasi hasil
-
-### Informasi yang Tracked
-
-- **Parameters**: max_features, max_iter, solver, model_type
-- **Metrics**:
-  - Training accuracy
-  - Test accuracy, precision, recall, F1-score
-- **Artifacts**:
-  - Trained model (model.pkl)
-  - Vectorizer (vectorizer.pkl)
-  - Metrics file (metrics.json)
-
-### Cara Membandingkan Model di MLflow UI
-
-1. Buka http://localhost:5000
-2. Pilih multiple runs dengan checkbox
-3. Klik "Compare" button
-4. View side-by-side comparison:
-   - Metrics charts
-   - Parameter differences
-   - Artifact comparisons
-
-## 📈 Hasil Eksperimen
-
-### Baseline Model (20K features)
-
-```
-Model: LogisticRegression
-Max Features: 20,000
-Test Accuracy: 89.97%
+Test Accuracy:  89.97%
 Test Precision: 89.55%
-Test Recall: 90.50%
-Test F1-Score: 90.02%
+Test Recall:    90.50%
+Test F1-Score:  90.02%
 ```
 
-### Eksperimen Perbandingan
-
-| Experiment | Model Type          | Max Features | Test Accuracy | Test F1-Score |
-| ---------- | ------------------- | ------------ | ------------- | ------------- |
-| Baseline   | Logistic Regression | 20,000       | 89.97%        | 90.02%        |
-| Exp 1      | Logistic Regression | 10,000       | 89.83%        | 89.89%        |
-| Exp 2      | Logistic Regression | 30,000       | 90.07%        | 90.12%        |
-
-**Model Terbaik**: Logistic Regression dengan 30K features (F1: 90.12%)
-
-## 🔄 Prefect Pipeline Architecture
-
-### Workflow Structure
-
-```python
-@flow(name="imdb-sentiment-pipeline")
-def sentiment_analysis_pipeline():
-    # Task 1: Data preparation
-    prepare_data_task()
-
-    # Task 2: Model training (depends on prepare)
-    train_model_task()
-
-    # Task 3: Model evaluation (depends on train)
-    evaluate_model_task()
-```
-
-### Task Features
-
-- **Retries**: Automatic retry on failure (prepare: 2x, train/evaluate: 1x)
-- **Retry Delay**: Configurable delay between retries
-- **Concurrent Runner**: Tasks can run in parallel when possible
-- **Logging**: Full execution logs and error tracking
-
-### Running with Prefect UI (Optional)
-
-```bash
-# Terminal 1: Start Prefect server
-prefect server start
-
-# Terminal 2: Run pipeline
-python pipeline/prefect_flow.py
-```
-
-Akses Prefect UI di: http://127.0.0.1:4200
-
-## 📊 Metrics & Evaluation
-
-### Confusion Matrix
-
+**Confusion Matrix:**
 ```
 [[4472  528]
  [ 475 4525]]
 ```
 
-### Classification Report
+## Docker Services
 
-```
-              precision    recall  f1-score   support
+| Service | Port | Description |
+|---------|------|-------------|
+| MLflow | 5000 | Experiment tracking |
+| Prefect | 4200 | Workflow UI |
+| API | 8000 | Model serving |
+| Dashboard | 8501 | Monitoring UI |
 
-    negative       0.90      0.89      0.90      5000
-    positive       0.90      0.91      0.90      5000
-
-    accuracy                           0.90     10000
-   macro avg       0.90      0.90      0.90     10000
-weighted avg       0.90      0.90      0.90     10000
-```
-
-## 🛠️ Tech Stack
-
-- **Data Versioning**: Git LFS (Large File Storage)
-- **Workflow Orchestration**: Prefect 3.4.25
-- **Experiment Tracking**: MLflow 3.1.4
-- **ML Framework**: scikit-learn 1.6.1
-- **Feature Engineering**: TF-IDF Vectorization
-- **Model**: Logistic Regression
-- **Containerization**: Docker + Docker Compose
-
-## 📝 Best Practices Implemented
-
-✅ **Train-Test Split**: 80-20 stratified split untuk mencegah overfitting  
-✅ **Reproducibility**: Random seed tetap (42) di semua eksperimen  
-✅ **Environment Isolation**: Docker containers untuk reproducible environment  
-✅ **Automated Experiment Comparison**: Script untuk pilih best model otomatis  
-✅ **Data Versioning**: Dataset tracked dengan Git LFS untuk file besar  
-✅ **Experiment Tracking**: Semua hyperparameter dan metrics logged ke MLflow  
-✅ **Workflow Orchestration**: Prefect untuk automated pipeline dengan retry logic  
-✅ **Code Quality**: Modular code dengan error handling dan logging  
-✅ **Metrics Lengkap**: Accuracy, Precision, Recall, F1, Confusion Matrix
-
-## 🚀 Next Steps (Week 3-4)
-
-### Week 3: Model Deployment
-
-- [ ] **Model Serving**: Buat FastAPI REST API endpoint di folder `api/`
-- [ ] **API Testing**: Test dengan curl/Postman
-- [ ] **API Documentation**: Swagger/OpenAPI docs
-
-### Week 4: Monitoring & Final Polish
-
-- [ ] **Dashboard**: Streamlit dashboard untuk inference demo
-- [ ] **Monitoring**: Evidently untuk data drift detection
-- [ ] **CI/CD**: GitHub Actions untuk automated testing (optional)
-- [ ] **Presentation**: Slide presentasi final
-
-## 🎯 Perintah Penting
+## Useful Commands
 
 ```bash
-# ==== DOCKER (RECOMMENDED) ====
-# Build dan jalankan semua services
-docker-compose up --build
-
-# Jalankan hanya pipeline
-docker-compose up pipeline
-
-# Stop semua containers
-docker-compose down
-
-# ==== LOCAL EXECUTION ====
-# Aktivasi environment
-source venv/bin/activate
-
-# Jalankan pipeline lengkap (recommended)
-./run_pipeline.sh
-
-# Atau jalankan manual dengan Prefect
-PREFECT_API_URL="" python pipeline/prefect_flow.py
-
-# Compare experiments dan pilih best model
+# View experiments
 python pipeline/compare_experiments.py
 
-# ==== MONITORING & VISUALIZATION ====
-# Lihat MLflow dashboard
-mlflow ui --port 5000
+# Check service status
+docker-compose ps
 
-# Start Prefect server (opsional, untuk monitoring)
-prefect server start
+# View logs
+docker-compose logs api
 
-# ==== GIT LFS ====
-# Pull large files
-git lfs pull
+# Stop all
+docker-compose down
 
-# List tracked files
-git lfs ls-files
-
-# Check LFS status
-git lfs status
-
-# Lihat metrics
-cat metrics.json
+# Test prediction
+./test_api.sh
 ```
 
-## 📚 Resources
+## Assignment Compliance
 
-- [Prefect Documentation](https://docs.prefect.io/)
-- [Git LFS Documentation](https://git-lfs.github.com/)
-- [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
-- [scikit-learn Documentation](https://scikit-learn.org/)
-
-## 👨‍💻 Author
-
-**Mohammad Affan Shofi**  
-Institut Teknologi Sepuluh Nopember (ITS)
+✅ **A. Data Versioning**: Git LFS dengan remote storage  
+✅ **B. Experiment Tracking**: MLflow dashboard  
+✅ **C. Orchestration**: Prefect pipeline + Dockerfile  
+✅ **D. Model Deployment**: FastAPI REST endpoint  
+✅ **E. Monitoring**: Streamlit dashboard + drift detection  
 
 ---
 
-## 📄 License
-
-This project is for educational purposes.
-
----
-
-**Status**: ✅ Minggu ke-13 & ke-14 COMPLETED  
-**Last Update**: November 29, 2025
+**Author**: Mohammad Affan Shofi  
+**Institution**: ITS Surabaya  
+**Date**: December 2025

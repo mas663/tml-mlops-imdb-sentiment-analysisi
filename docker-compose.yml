@@ -1,7 +1,5 @@
-version: "3.8"
-
 services:
-  # MLflow Tracking Server
+  # MLflow tracking server
   mlflow:
     image: python:3.9-slim
     container_name: mlflow-server
@@ -10,22 +8,29 @@ services:
       - "5000:5000"
     volumes:
       - ./mlruns:/mlflow/mlruns
-    command: >
-      sh -c "pip install mlflow && 
-             mlflow server 
-             --backend-store-uri file:///mlflow/mlruns 
-             --default-artifact-root file:///mlflow/mlruns 
-             --host 0.0.0.0 
-             --port 5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=file:///mlflow/mlruns
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=file:///mlflow/mlruns
+    command: sh -c "apt-get update -qq && apt-get install -y -qq curl procps && pip install -q mlflow gunicorn && gunicorn -b 0.0.0.0:5000 -w 4 --timeout 120 --access-logfile - --error-logfile - mlflow.server:app"
     networks:
       - mlops-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://0.0.0.0:5000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
 
-  # ML Pipeline Service
+  # ML pipeline service
   pipeline:
     build: .
     container_name: mlops-pipeline
     depends_on:
-      - mlflow
+      mlflow:
+        condition: service_healthy
+      prefect:
+        condition: service_started
     volumes:
       - ./data:/app/data
       - ./models:/app/models
@@ -33,14 +38,16 @@ services:
       - ./metrics.json:/app/metrics.json
       - ./metrics.txt:/app/metrics.txt
     environment:
-      - PREFECT_API_URL=""
+      - PYTHONUNBUFFERED=1
       - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PREFECT_API_URL=http://prefect:4200/api
     networks:
       - mlops-network
-    # By default, run the pipeline once
-    # To keep it running, use: command: tail -f /dev/null
+    # keep container running - run pipeline manually:
+    # docker-compose exec pipeline python pipeline/prefect_flow.py
+    command: tail -f /dev/null
 
-  # Prefect Server (Optional - untuk monitoring)
+  # Prefect server for workflow monitoring
   prefect:
     image: prefecthq/prefect:3-python3.9
     container_name: prefect-server
@@ -53,6 +60,72 @@ services:
     command: prefect server start --host 0.0.0.0
     networks:
       - mlops-network
+
+  # API service for model serving
+  api:
+    build: .
+    container_name: sentiment-api
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./metrics.json:/app/metrics.json
+      - ./api:/app/api
+      - ./dashboard:/app/dashboard
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - mlops-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://localhost:8000/health'')" || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  # Dashboard service for monitoring
+  dashboard:
+    build: .
+    container_name: sentiment-dashboard
+    depends_on:
+      api:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./mlruns:/app/mlruns
+      - ./metrics.json:/app/metrics.json
+    environment:
+      - PYTHONUNBUFFERED=1
+      - API_URL=http://api:8000
+    command: streamlit run dashboard/app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true
+    networks:
+      - mlops-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://localhost:8501/_stcore/health'')" || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
 networks:
   mlops-network:

@@ -1,6 +1,5 @@
 """
-Script untuk menjalankan berbagai eksperimen dengan hyperparameter berbeda
-Sesuai dengan timeline Minggu ke-13: Jalankan beberapa eksperimen
+Experiment runner for hyperparameter tuning
 """
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -15,7 +14,7 @@ from datetime import datetime
 import os
 
 def load_data():
-    """Load training and test data"""
+    """Load training and test datasets"""
     train_df = pd.read_csv("data/processed/train.csv")
     test_df = pd.read_csv("data/processed/test.csv")
     
@@ -37,23 +36,23 @@ def run_experiment(experiment_name, model_config, vectorizer_config):
     mlflow.set_experiment("imdb-sentiment-analysis")
     
     with mlflow.start_run(run_name=experiment_name):
-        # Load data
+        # load datasets
         print("[1/6] Loading data...")
         X_train, y_train, X_test, y_test = load_data()
-        print(f"✓ Train: {len(X_train)}, Test: {len(X_test)}")
+        print(f"Train: {len(X_train)}, Test: {len(X_test)}")
         
-        # Log all parameters
+        # log parameters
         mlflow.log_params(vectorizer_config)
         mlflow.log_params(model_config)
         
-        # Vectorization
+        # vectorize text data
         print(f"\n[2/6] Vectorizing with max_features={vectorizer_config['max_features']}...")
         vectorizer = TfidfVectorizer(max_features=vectorizer_config["max_features"])
         X_train_vec = vectorizer.fit_transform(X_train)
         X_test_vec = vectorizer.transform(X_test)
-        print(f"✓ Shape: Train {X_train_vec.shape}, Test {X_test_vec.shape}")
+        print(f"Shape: Train {X_train_vec.shape}, Test {X_test_vec.shape}")
         
-        # Model selection and training
+        # train model
         print(f"\n[3/6] Training {model_config['model_type']}...")
         model_type = model_config.pop("model_type")
         
@@ -67,16 +66,16 @@ def run_experiment(experiment_name, model_config, vectorizer_config):
             raise ValueError(f"Unknown model type: {model_type}")
         
         model.fit(X_train_vec, y_train)
-        print("✓ Training completed")
+        print("Training completed")
         
-        # Training metrics
-        print("\n[4/6] Calculating training metrics...")
+        # compute training metrics
+        print("\n[4/6] Computing training metrics...")
         y_train_pred = model.predict(X_train_vec)
         train_acc = accuracy_score(y_train, y_train_pred)
-        print(f"✓ Training Accuracy: {train_acc:.4f}")
+        print(f"Training Accuracy: {train_acc:.4f}")
         mlflow.log_metric("train_accuracy", train_acc)
         
-        # Test metrics
+        # test set evaluation
         print("\n[5/6] Evaluating on test set...")
         y_test_pred = model.predict(X_test_vec)
         
@@ -97,16 +96,16 @@ def run_experiment(experiment_name, model_config, vectorizer_config):
         mlflow.log_metric("test_recall", test_rec)
         mlflow.log_metric("test_f1_score", test_f1)
         
-        # Save model
-        print("\n[6/6] Logging metrics to MLflow...")
-        # Skip full model logging to speed up experiments
+        # log to MLflow
+        print("\n[6/6] Logging to MLflow...")
+        # skip full model logging to speed things up
         # mlflow.sklearn.log_model(model, "model")
         
         run_id = mlflow.active_run().info.run_id
-        print(f"✓ Run ID: {run_id}")
-        print(f"✓ Experiment completed!")
+        print(f"Run ID: {run_id}")
+        print(f"Experiment completed!")
         
-        # Restore model_type for return
+        # restore model_type
         model_config["model_type"] = model_type
         
         return {
@@ -121,7 +120,7 @@ def main():
     
     print("\n" + "="*60)
     print("MLOPS SENTIMENT ANALYSIS - EXPERIMENT SUITE")
-    print("Timeline Minggu ke-13: Jalankan Beberapa Eksperimen")
+    print("Running multiple experiments for model comparison")
     print("="*60)
     
     experiments = [
@@ -172,7 +171,7 @@ def main():
         )
         results.append(result)
     
-    # Summary
+    # print summary
     print("\n\n" + "="*60)
     print("EXPERIMENT SUMMARY")
     print("="*60)
@@ -182,7 +181,7 @@ def main():
     for result in results:
         print(f"{result['model_type']:<25} {result['test_accuracy']:<12.4f} {result['test_f1']:<12.4f} {result['run_id']}")
     
-    # Find best model
+    # find best performing model
     best_result = max(results, key=lambda x: x['test_f1'])
     print("\n" + "="*60)
     print(f"BEST MODEL: {best_result['model_type']}")
@@ -191,8 +190,8 @@ def main():
     print(f"  Run ID: {best_result['run_id']}")
     print("="*60)
     
-    print(f"\n✓ All experiments completed!")
-    print(f"✓ View results in MLflow UI: http://127.0.0.1:5000")
+    print(f"\nAll experiments completed!")
+    print(f"View results in MLflow UI: http://127.0.0.1:5000")
 
 if __name__ == "__main__":
     main()

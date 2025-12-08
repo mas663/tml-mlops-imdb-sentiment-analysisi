@@ -1,10 +1,10 @@
-# MLOps Sentiment Analysis - Docker Image
+# Docker image for MLOps Sentiment Analysis
 FROM python:3.9-slim
 
-# Set working directory
+# set working directory
 WORKDIR /app
 
-# Install system dependencies for Git LFS and build tools
+# install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     git-lfs \
@@ -13,24 +13,23 @@ RUN apt-get update && apt-get install -y \
     && git lfs install \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for layer caching)
+# copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
+# install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# copy project files
 COPY . .
 
-# Create necessary directories
+# create necessary directories
 RUN mkdir -p data/raw data/processed models mlruns
 
-# Set environment variables
+# environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PREFECT_API_URL=""
 
-# Expose ports
+# expose ports
 EXPOSE 5000 4200
 
-# Default command: run pipeline
+# default command
 CMD ["python", "pipeline/prefect_flow.py"]

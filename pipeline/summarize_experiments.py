@@ -1,5 +1,5 @@
 """
-Script untuk membuat summary eksperimen dan memilih best model
+Create experiment summary and select best model
 """
 import mlflow
 import json
@@ -10,26 +10,26 @@ def main():
     print("MLOPS SENTIMENT ANALYSIS - EXPERIMENT SUMMARY")
     print("="*60)
     
-    # Connect to MLflow
+    # connect to MLflow
     mlflow.set_tracking_uri("file:./mlruns")
     client = mlflow.tracking.MlflowClient()
     
-    # Get experiment
+    # get experiment
     experiment = client.get_experiment_by_name("imdb-sentiment-analysis")
     
     if not experiment:
         print("No experiments found!")
         return
     
-    # Get all runs
+    # get all runs
     runs = client.search_runs(
         experiment.experiment_id,
         order_by=["start_time DESC"]
     )
     
-    print(f"\n✓ Found {len(runs)} experiment runs\n")
+    print(f"\nFound {len(runs)} experiment runs\n")
     
-    # Collect results
+    # collect results
     results = []
     for run in runs:
         metrics = run.data.metrics
@@ -46,10 +46,10 @@ def main():
         }
         results.append(result)
     
-    # Sort by F1 score
+    # sort by F1 score
     results.sort(key=lambda x: x["test_f1"], reverse=True)
     
-    # Display table
+    # display table
     print(f"{'Rank':<6} {'Model Type':<20} {'Features':<12} {'Test Acc':<12} {'Test F1':<12}")
     print("-"*72)
     
@@ -57,11 +57,11 @@ def main():
         print(f"{i:<6} {result['model_type']:<20} {str(result['max_features']):<12} "
               f"{result['test_accuracy']:<12.4f} {result['test_f1']:<12.4f}")
     
-    # Best model
+    # best model
     if results:
         best = results[0]
         print("\n" + "="*60)
-        print("🏆 BEST MODEL")
+        print("BEST MODEL")
         print("="*60)
         print(f"Model Type:       {best['model_type']}")
         print(f"Max Features:     {best['max_features']}")
@@ -72,7 +72,7 @@ def main():
         print(f"Run Name:         {best['run_name']}")
         print("="*60)
         
-        # Save to file
+        # save to file
         summary = {
             "best_model": best,
             "all_experiments": results,
@@ -82,8 +82,8 @@ def main():
         with open("experiment_summary.json", "w") as f:
             json.dump(summary, f, indent=2)
         
-        print("\n✓ Summary saved to: experiment_summary.json")
-        print(f"✓ View detailed results in MLflow UI: http://127.0.0.1:5000")
+        print("\nSummary saved to: experiment_summary.json")
+        print(f"View detailed results in MLflow UI: http://127.0.0.1:5000")
     
     print("\n" + "="*60)
     print("RECOMMENDATIONS FOR DEPLOYMENT")

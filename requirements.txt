@@ -4,7 +4,11 @@ numpy
 mlflow
 prefect
 fastapi
-uvicorn
-streamlit
-evidently
+uvicorn[standard]
+pydantic
+python-multipart
+streamlit==1.31.0
+evidently==0.4.13
+plotly==5.18.0
 joblib
+requests
