@@ -17,20 +17,19 @@ from dashboard.utils.drift_detector import (
     load_production_data,
     calculate_drift_score,
     get_drift_status,
-    get_comparison_stats,
-    generate_drift_report
+    get_comparison_stats
 )
 
 # Page config
 st.set_page_config(
     page_title="Data Drift Detection",
-    page_icon="⚠️",
+    page_icon="📊",
     layout="wide"
 )
 
 # Header
-st.title("⚠️ Data Drift Detection")
-st.markdown("Monitor perubahan distribusi data antara training dan production")
+st.title("Data Drift Detection")
+st.write("Monitor perubahan distribusi data antara training dan production")
 
 st.markdown("---")
 
@@ -41,12 +40,12 @@ with st.spinner("Loading data..."):
 
 # Check if data available
 if reference_df.empty:
-    st.error("❌ Reference data (training data) tidak ditemukan!")
-    st.info("Pastikan file `data/processed/train.csv` tersedia.")
+    st.error("Reference data (training data) tidak ditemukan!")
+    st.info("Pastikan file data/processed/train.csv tersedia.")
     st.stop()
 
 if production_df.empty:
-    st.warning("📝 Production data masih kosong. Lakukan beberapa predictions terlebih dahulu.")
+    st.warning("Production data masih kosong. Lakukan beberapa predictions terlebih dahulu.")
     st.info("Setelah melakukan minimal 50 predictions, drift detection akan tersedia.")
     st.stop()
 
@@ -55,7 +54,7 @@ drift_score = calculate_drift_score(reference_df, production_df)
 status_text, status_color = get_drift_status(drift_score)
 
 # Drift Status Card
-st.subheader("🎯 Current Status")
+st.subheader("Current Status")
 
 col1, col2, col3 = st.columns([2, 1, 1])
 
@@ -82,19 +81,10 @@ with col3:
         value=f"{len(production_df):,} samples"
     )
 
-# Interpretation
-st.info("""
-    **Interpretation:**
-    - **Drift Score < 0.1:** ✅ No significant drift, model masih reliable
-    - **Drift Score 0.1-0.3:** ⚠️ Low drift, monitor closely
-    - **Drift Score 0.3-0.5:** ⚠️ Moderate drift, consider retraining
-    - **Drift Score > 0.5:** ❌ High drift, retraining recommended!
-""")
-
 st.markdown("---")
 
 # Comparison Statistics
-st.subheader("📊 Distribution Comparison")
+st.subheader("Distribution Comparison")
 
 stats = get_comparison_stats(reference_df, production_df)
 
@@ -103,7 +93,7 @@ col_left, col_right = st.columns(2)
 with col_left:
     st.markdown("#### Text Length Distribution")
     
-    # Create overlapping histogram
+    # Create histogram comparison
     fig_length = go.Figure()
     
     fig_length.add_trace(go.Histogram(
@@ -127,8 +117,7 @@ with col_left:
         title='Text Length Distribution Comparison',
         xaxis_title='Text Length (characters)',
         yaxis_title='Frequency',
-        height=400,
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99)
+        height=400
     )
     
     st.plotly_chart(fig_length, use_container_width=True)
@@ -153,8 +142,7 @@ with col_left:
             diff_pct = stats['difference']['text_length_diff_pct']
             st.metric(
                 "Difference",
-                f"{diff_pct:.1f}%",
-                delta=None
+                f"{diff_pct:.1f}%"
             )
 
 with col_right:
@@ -190,13 +178,11 @@ with col_right:
         xaxis_title='Sentiment',
         yaxis_title='Count',
         barmode='group',
-        height=400,
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99)
+        height=400
     )
     
     st.plotly_chart(fig_sentiment, use_container_width=True)
     
-    # Stats
     if stats:
         col_ref2, col_prod2, col_diff2 = st.columns(3)
         
@@ -216,14 +202,13 @@ with col_right:
             sent_diff = stats['difference']['sentiment_diff']
             st.metric(
                 "Difference",
-                f"{sent_diff:.1f}%",
-                delta=None
+                f"{sent_diff:.1f}%"
             )
 
 st.markdown("---")
 
 # Detailed Statistics
-st.subheader("📈 Detailed Statistics")
+st.subheader("Detailed Statistics")
 
 col1, col2 = st.columns(2)
 
@@ -268,126 +253,29 @@ with col2:
 st.markdown("---")
 
 # Recommendations
-st.subheader("💡 Recommendations")
+st.subheader("Recommendations")
 
 if drift_score < 0.1:
     st.success("""
-        ✅ **No Action Needed**
+        **Status: Normal**
         
-        Data distribution masih stabil. Model performance kemungkinan masih baik.
-        Lanjutkan monitoring secara berkala.
+        Distribusi data masih stabil, tidak ada perubahan signifikan. Model masih bisa digunakan dengan baik.
     """)
 elif drift_score < 0.3:
-    st.warning("""
-        ⚠️ **Monitor Closely**
+    st.info("""
+        **Status: Perlu Monitoring**
         
-        Terdapat sedikit perubahan distribusi data. Langkah yang disarankan:
-        1. Monitor model performance metrics
-        2. Check apakah accuracy menurun
-        3. Siapkan rencana retraining
+        Terdeteksi perubahan kecil pada distribusi data. Lanjutkan monitoring secara berkala.
     """)
 elif drift_score < 0.5:
     st.warning("""
-        ⚠️ **Consider Retraining**
+        **Status: Perlu Perhatian**
         
-        Drift cukup signifikan. Disarankan untuk:
-        1. Collect more recent data
-        2. Retrain model dengan data baru
-        3. Evaluate model performance
-        4. Consider A/B testing
+        Distribusi data mulai berubah cukup signifikan. Pertimbangkan untuk melakukan retraining model.
     """)
 else:
     st.error("""
-        ❌ **Retraining Recommended**
+        **Status: Perlu Retraining**
         
-        High drift detected! Model mungkin tidak reliable lagi. Action items:
-        1. **Stop production usage** (jika critical)
-        2. Collect production data
-        3. Retrain model immediately
-        4. Validate new model
-        5. Deploy new version
+        Distribusi data production berbeda signifikan dengan training data. Disarankan untuk retrain model dengan data terbaru.
     """)
-
-st.markdown("---")
-
-# Generate Full Report
-st.subheader("📄 Generate Full Drift Report")
-
-st.markdown("Generate comprehensive drift report menggunakan Evidently:")
-
-if st.button("🔍 Generate Evidently Report", use_container_width=True, type="primary"):
-    with st.spinner("Generating detailed drift report..."):
-        report_path = generate_drift_report(reference_df, production_df)
-        
-        if report_path and Path(report_path).exists():
-            st.success("✅ Report generated successfully!")
-            
-            # Read HTML content
-            with open(report_path, 'r', encoding='utf-8') as f:
-                html_content = f.read()
-            
-            # Display in expander
-            with st.expander("📊 View Evidently Report", expanded=True):
-                st.components.v1.html(html_content, height=800, scrolling=True)
-            
-            # Download button
-            st.download_button(
-                label="📥 Download HTML Report",
-                data=html_content,
-                file_name=f"drift_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
-                mime="text/html"
-            )
-        else:
-            st.warning("⚠️ Could not generate Evidently report. Using simplified drift detection.")
-            st.info("Install Evidently untuk full report: `pip install evidently`")
-
-# Sidebar
-with st.sidebar:
-    st.title("🔬 Drift Detection Info")
-    
-    st.markdown("### What is Data Drift?")
-    st.markdown("""
-        Data drift terjadi ketika distribusi 
-        data production berbeda dari data training.
-        
-        **Causes:**
-        - User behavior changes
-        - Seasonal patterns
-        - New data sources
-        - System updates
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### Detection Methods")
-    st.markdown("""
-        **1. Statistical Tests**
-        - KS Test
-        - Chi-square Test
-        - Wasserstein Distance
-        
-        **2. Distribution Comparison**
-        - Text length distribution
-        - Sentiment ratio
-        - Feature distributions
-        
-        **3. Performance Monitoring**
-        - Accuracy trends
-        - Confidence scores
-        - Error rates
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### Current Metrics")
-    st.metric("Drift Score", f"{drift_score:.4f}")
-    st.metric("Status", status_text)
-    
-    st.markdown("---")
-    
-    st.markdown("### Actions")
-    
-    if st.button("🔄 Refresh Analysis", use_container_width=True):
-        st.rerun()
-    
-    st.caption("Last updated: " + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
