@@ -188,7 +188,7 @@ with st.sidebar:
     st.title("Quick Links")
     
     st.markdown("### Services")
-    st.markdown("- [MLflow UI](http://localhost:5000) - Experiment Tracking")
+    st.markdown("- [MLflow UI](http://localhost:5001) - Experiment Tracking")
     st.markdown("- [Prefect UI](http://localhost:4200) - Pipeline Orchestration")
     st.markdown("- [API Docs](http://localhost:8000/docs) - FastAPI Swagger")
     st.markdown("- [API Health](http://localhost:8000/health) - Health Check")

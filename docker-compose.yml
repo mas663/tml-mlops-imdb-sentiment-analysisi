@@ -5,17 +5,17 @@ services:
     container_name: mlflow-server
     working_dir: /mlflow
     ports:
-      - "5000:5000"
+      - "5001:5000"
     volumes:
       - ./mlruns:/mlflow/mlruns
     environment:
       - MLFLOW_BACKEND_STORE_URI=file:///mlflow/mlruns
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=file:///mlflow/mlruns
-    command: sh -c "apt-get update -qq && apt-get install -y -qq curl procps && pip install -q mlflow gunicorn && gunicorn -b 0.0.0.0:5000 -w 4 --timeout 120 --access-logfile - --error-logfile - mlflow.server:app"
+    command: sh -c "apt-get update -qq && apt-get install -y -qq curl procps && pip install -q mlflow && mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri file:///mlflow/mlruns --default-artifact-root file:///mlflow/mlruns"
     networks:
       - mlops-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://0.0.0.0:5000/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
